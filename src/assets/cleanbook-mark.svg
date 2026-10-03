@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="CleanBook mark">
+  <!-- Open ledger: the gap is the unresolved work; the tick is the cleared next step. -->
+  <rect width="96" height="96" rx="24" fill="#0F172A"/>
+  <path d="M63 26H42C30.954 26 22 34.954 22 46s8.954 20 20 20h21" fill="none" stroke="#5EEAD4" stroke-width="10" stroke-linecap="round"/>
+  <path d="M48 48l8 8 18-20" fill="none" stroke="#F8FAFC" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="71" cy="68" r="4" fill="#FBBF24"/>
+</svg>

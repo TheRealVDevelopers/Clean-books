@@ -1,0 +1,90 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function activeUser() {
+      return signedIn() && userDoc().data.status == 'active';
+    }
+
+    function firmId() {
+      return userDoc().data.firmId;
+    }
+
+    function firmRole() {
+      return userDoc().data.role;
+    }
+
+    function firmMember(targetFirmId) {
+      return activeUser() && firmId() == targetFirmId;
+    }
+
+    function firmAdmin(targetFirmId) {
+      return firmMember(targetFirmId) && firmRole() in ['principal', 'manager'];
+    }
+
+    function clientMember(targetFirmId, targetClientId) {
+      return firmMember(targetFirmId) && (
+        firmRole() in ['principal', 'manager', 'staff', 'reviewer'] ||
+        targetClientId in userDoc().data.clientIds
+      );
+    }
+
+    match /users/{userId} {
+      allow read: if activeUser() && (request.auth.uid == userId || firmId() == resource.data.firmId);
+      allow create: if false;
+      allow update: if activeUser() && (
+        firmAdmin(resource.data.firmId) ||
+        (request.auth.uid == userId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'phone', 'photoURL']))
+      );
+      allow delete: if false;
+    }
+
+    match /firms/{targetFirmId} {
+      allow read: if firmMember(targetFirmId);
+      allow create: if false;
+      allow update: if firmAdmin(targetFirmId);
+      allow delete: if false;
+
+      match /clients/{clientId} {
+        allow read: if clientMember(targetFirmId, clientId);
+        allow create: if (firmAdmin(targetFirmId) || (firmMember(targetFirmId) && firmRole() == 'staff'))
+          && request.resource.data.firmId == targetFirmId;
+        allow update: if (firmAdmin(targetFirmId) || (firmMember(targetFirmId) && firmRole() == 'staff'))
+          && request.resource.data.firmId == targetFirmId;
+        allow delete: if firmAdmin(targetFirmId);
+
+        match /{collection}/{documentId} {
+          allow read: if clientMember(targetFirmId, clientId);
+          allow create, update: if clientMember(targetFirmId, clientId)
+            && request.resource.data.firmId == targetFirmId
+            && request.resource.data.clientId == clientId;
+          allow delete: if firmAdmin(targetFirmId);
+        }
+      }
+
+      match /invitations/{invitationId} {
+        allow read, write: if false;
+      }
+
+      match /{collection}/{documentId} {
+        allow read: if firmMember(targetFirmId);
+        allow create, update: if collection != 'invitations' && (firmAdmin(targetFirmId)
+          || (firmMember(targetFirmId) && firmRole() == 'staff'));
+        allow delete: if firmAdmin(targetFirmId);
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

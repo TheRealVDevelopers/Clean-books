@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 104" role="img" aria-label="CleanBook logo">
+  <rect width="96" height="96" x="4" y="4" rx="24" fill="#0F172A"/>
+  <path d="M67 30H46C34.954 30 26 38.954 26 50s8.954 20 20 20h21" fill="none" stroke="#5EEAD4" stroke-width="10" stroke-linecap="round"/>
+  <path d="M52 52l8 8 18-20" fill="none" stroke="#F8FAFC" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="75" cy="72" r="4" fill="#FBBF24"/>
+  <text x="122" y="57" fill="#0F172A" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="750" letter-spacing="-1.8">CleanBook</text>
+  <text x="124" y="82" fill="#64748B" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="600" letter-spacing="1.2">CLEAR BOOKS. CLEAR NEXT STEPS.</text>
+</svg>
