@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom'
 import { MonitorSmartphone, ArrowRight, Users, Activity, IndianRupee, Wrench } from 'lucide-react'
 import { PageHead, Kpi, Pill, MiniStat, Bar } from '../components/ui.jsx'
 import { VerticalIcon, Readiness, Note, SectionTitle } from '../components/bits.jsx'
-import { CLIENTS, CURRENT_PERIOD, LEDGER } from '../data/index.js'
-import { brandOf, hasApp } from '../data/business.js'
 import { PIPELINE_TONE } from '../lib/status.js'
 import { inr, inrShort, pct } from '../lib/format.js'
 import { pLabel } from '../lib/dates.js'
+import { useRepo } from '../repo/index.js'
 
 export default function ClientApps() {
+  const { CLIENTS, CURRENT_PERIOD, LEDGER, brandOf, hasApp } = useRepo()
   const live = CLIENTS.filter(hasApp)
   const building = CLIENTS.filter((c) => c.realv.status === 'Build In Progress')
   const rest = CLIENTS.filter((c) => !hasApp(c) && c.realv.status !== 'Build In Progress')

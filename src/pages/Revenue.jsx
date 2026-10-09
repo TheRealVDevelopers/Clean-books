@@ -10,17 +10,17 @@ import {
 import { Card, CardHead, PageHead, Kpi, Pill, Table, Tabs, MiniStat, Bar, Field, Empty } from '../components/ui.jsx'
 import { ClientChip, SectionTitle, Note, VerticalIcon } from '../components/bits.jsx'
 import ChartBox from '../components/ChartBox.jsx'
-import { revenue, clientById, FIRM } from '../data/index.js'
 import { PIPELINE_TONE } from '../lib/status.js'
 import { inr, inrShort, axisMoney, pct, toCsv, dateFull, num } from '../lib/format.js'
 import { useApp } from '../lib/store.jsx'
-
-const {
-  TERMS, MONTHS, CURRENT_MONTH, PAID_MONTHS, LIFETIME, BY_CLIENT, ACTIVE_BY_CLIENT,
-  PIPELINE, PIPELINE_TOTALS, PROJECTION, FORWARD, STATEMENTS,
-} = revenue
+import { useRepo } from '../repo/index.js'
 
 export default function Revenue() {
+  const { clientById, revenue } = useRepo()
+  const {
+    TERMS, MONTHS, CURRENT_MONTH, PAID_MONTHS, LIFETIME, BY_CLIENT, ACTIVE_BY_CLIENT,
+    PIPELINE, PROJECTION, STATEMENTS,
+  } = revenue
   const { toast } = useApp()
   const [tab, setTab] = useState('clients')
 
@@ -185,6 +185,7 @@ export default function Revenue() {
 
 /* ------------------------------------------------------------------ per client */
 function PerClient() {
+  const { LIFETIME, BY_CLIENT } = useRepo().revenue
   const earning = BY_CLIENT.filter((b) => b.monthsBilled > 0)
   const totalShare = earning.reduce((s, b) => s + b.monthlyShare, 0)
   const top = earning[0]
@@ -255,6 +256,7 @@ function PerClient() {
 
 /* --------------------------------------------------------------- payout history */
 function Payouts({ download }) {
+  const { LIFETIME, STATEMENTS } = useRepo().revenue
   return (
     <div>
       <Table
@@ -319,6 +321,7 @@ function Payouts({ download }) {
 
 /* -------------------------------------------------------------------- pipeline */
 function Pipeline() {
+  const { clientById, revenue: { PIPELINE, PIPELINE_TOTALS, FORWARD } } = useRepo()
   return (
     <div>
       <div className="px-4 py-3 bg-soft/50 border-b border-line grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -385,6 +388,7 @@ function Pipeline() {
 
 /* ----------------------------------------------------------------- the terms */
 function TermsPanel() {
+  const { FIRM, revenue: { TERMS } } = useRepo()
   return (
     <div className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
       <div className="lg:col-span-2 space-y-4">

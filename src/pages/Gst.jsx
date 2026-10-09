@@ -6,13 +6,14 @@ import {
 } from 'lucide-react'
 import { Card, CardHead, PageHead, Kpi, Pill, Table, MiniStat, Segmented, Empty, Bar } from '../components/ui.jsx'
 import { ClientChip, DueCell, StatusPill, Readiness, Note, AutoTag } from '../components/bits.jsx'
-import { CLIENTS, CURRENT_PERIOD, PERIOD_KEYS, LEDGER, OBLIGATIONS, isDone } from '../data/index.js'
-import { filingBoard } from '../lib/derive.js'
+import { isDone } from '../lib/obligations.js'
 import { inr, inrShort, num, toCsv } from '../lib/format.js'
 import { pLabel, dueOn } from '../lib/dates.js'
 import { useApp } from '../lib/store.jsx'
+import { useRepo } from '../repo/index.js'
 
 export default function Gst() {
+  const { CLIENTS, CURRENT_PERIOD, PERIOD_KEYS, LEDGER, OBLIGATIONS, filingBoard } = useRepo()
   const { statusOf, fileReturn, markReady, toast, docStatusOf } = useApp()
   const [period, setPeriod] = useState(CURRENT_PERIOD)
   const [only, setOnly] = useState('all')

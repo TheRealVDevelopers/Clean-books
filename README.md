@@ -148,7 +148,11 @@ entity. Better to raise that in the pitch than to have a CA raise it for you.
 
 ## How it's built
 
-- React 19 + Vite + Tailwind, `recharts` for charts, `lucide-react` for icons. No backend.
+- React 19 + Vite + Tailwind, `recharts` for charts, `lucide-react` for icons.
+- The demo has no backend. Live mode runs on Firebase: Authentication, Firestore, Storage and Functions.
+- Screens never import the sample data or Firebase. They read through `useRepo()` (`src/repo/`), which
+  is the demo repository in the demo build and the Firestore repository in the live build. Every screen is
+  its own chunk, and screens that only make sense on sample data are compiled into the demo build alone.
 - Hash routing, so `dist-demo/` (or the live `dist/`) can be dropped on any static host.
 - Light and dark themes off CSS variables (`data-theme` on `<html>`).
 - [CLEANBOOK_REQUIREMENTS.md](./CLEANBOOK_REQUIREMENTS.md) contains the product scope: Firebase foundation, integrations and the AI-assistant guardrails.
@@ -166,16 +170,27 @@ src/
     revenue.js      the 20% share: months, payouts, per-client, pipeline, projection
     business.js     the client side: brand accent per app, staff and attendance,
                     cash position, and the per-trade operations module
+  repo/
+    index.js        useRepo(), and loadRepo() — picks the demo or live repository at build time
+    contract.js     every name a repository provides to the screens
+    demo.jsx        the demo repository: src/data, frozen on its fixed date
+    demo-session.js what a presenter changes during a demo, kept for the session
+    firestore.jsx   the live repository: the signed-in user's firm, read from Firestore
+    live-data.js    live data and session actions, as plain functions
+    firebase-auth.jsx  Firebase sign-in and the user's CleanBook profile
   apps/owner/       the client-side app — shell, one generic table renderer, and
                     five panels (Today, Operations, People, Money, My CA) plus the
                     "no app yet" sales page
   lib/
+    mode.js         IS_DEMO — which build this is
     dates.js        Indian tax-period arithmetic (FY, quarters, due dates)
     rng.js          seeded generator — the demo reads identically on every reload
-    derive.js       every aggregate the screens use
+    obligations.js  obligation queries shared by both repositories
+    derive.js       every aggregate the screens use, built per dataset
     status.js       one place that decides what colour a status is
-    store.jsx       theme, signed-in staff member, session actions, toasts
-  pages/            fourteen screens
+    store.jsx       theme, who is signed in, toasts, and the repository's session actions
+    firebase.js     Firebase, connected to the local emulators in development
+  pages/            the practice screens
 ```
 
 Nothing on the compliance calendar is typed in. Each client's registration profile — regular,

@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router-dom'
 import { CheckCircle2, MailCheck } from 'lucide-react'
 import { useAuth } from '../lib/auth.jsx'
-import { acceptInvitation } from '../lib/foundation.js'
+import { useRepo } from '../repo/index.js'
 
 export default function AcceptInvitation() {
   const auth = useAuth()
+  const { acceptInvitation } = useRepo()
   const [params] = useSearchParams()
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')

@@ -7,9 +7,10 @@ CA / Auditor Application        Client Business Application
         |                                  |
         +--------- Shared domain ----------+
                           |
-                 React application state
-                          |
-             Demo JavaScript data modules
+          useRepo() — the data-access layer (src/repo)
+              |                          |
+   demo build: src/data          live build: Firestore
+   (session-only actions)        (Firebase Auth, emulators in development)
 
 Production target:
 React clients -> Firebase Auth -> Firestore/Storage -> Cloud Functions
@@ -27,8 +28,9 @@ src/
     panels/               Today, operations, people, money, CA,
                           voice invoice and E-Way Bill
   components/             Shared UI components
-  data/                   Seeded demo domain records
-  lib/                    Store, Firebase initializer, dates and formatting
+  repo/                   Data-access layer: demo and Firestore repositories
+  data/                   Seeded demo domain records (demo build only)
+  lib/                    Store, build mode, Firebase initializer, dates and formatting
 ```
 
 ## Application boundaries
@@ -41,9 +43,31 @@ Routes under the main shell include dashboard, clients, compliance workspaces, d
 
 `/app/:id` renders a separate owner application without the practice sidebar. Branding and operations change according to the selected client and business vertical.
 
+### Two builds, one codebase
+
+The build mode is fixed at build time: `npm run build:demo` or `npm run build` (live). Screens read
+data only through `useRepo()`. `src/repo/index.js` loads one repository with a dynamic `import()`:
+
+- **Demo** (`src/repo/demo.jsx`) wraps the sample practice in `src/data/`. Actions such as filing,
+  reminders, uploads and invoices are kept in session state (`src/repo/demo-session.js`) and are
+  cleared by "Reset demo".
+- **Live** (`src/repo/firestore.jsx`) reads the signed-in user's firm, its users and its clients from
+  Firestore. It provides empty values for data CleanBook does not store yet. An action that is not
+  backed by Firestore yet says so and changes nothing.
+
+`src/repo/contract.js` lists every name a repository provides, and a unit test holds both
+implementations to it. Another test checks the import boundaries: only the demo repository imports
+`src/data`, and only the live side imports Firebase. As a result, the live bundle carries no sample
+data and the demo bundle carries no Firebase code.
+
+Screens that run only on sample data are compiled into the demo build alone: the GST, ITC, TDS,
+direct-tax, notices, revenue-share, assistant, integrations and client-applications screens, and the
+owner app's tabs other than My CA. Every route is code-split.
+
 ### Shared store
 
-`src/lib/store.jsx` is the current workflow bridge. It manages demo actions including document receipts, task states, missions, invoices, E-Way Bills, audit events and notifications.
+`src/lib/store.jsx` holds screen state: theme, the signed-in user, the command bar and toasts. It
+also exposes the session actions of the repository in use.
 
 ## Production data model proposal
 

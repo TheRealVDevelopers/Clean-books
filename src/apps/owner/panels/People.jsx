@@ -5,16 +5,15 @@ import { useMemo } from 'react'
 import { Users, Clock, IndianRupee, CalendarCheck2, LogIn, LogOut } from 'lucide-react'
 import { Card, CardHead, Pill, Table, Bar, Avatar } from '../../../components/ui.jsx'
 import { Note } from '../../../components/bits.jsx'
-import { PEOPLE, MONEY, attendanceSummary } from '../../../data/business.js'
-import { LEDGER } from '../../../data/periods.js'
-import { CURRENT_PERIOD } from '../../../data/practice.js'
+import { useRepo } from '../../../repo/index.js'
 import { inr, inrShort, num } from '../../../lib/format.js'
 
 const STATE_TONE = { Present: 'ok', Late: 'warn', 'On trip': 'brand', Absent: 'bad', 'On leave': 'info' }
 
 export default function People({ client: c, accent }) {
+  const { PEOPLE, MONEY, attendanceSummary, LEDGER, CURRENT_PERIOD } = useRepo()
   const p = PEOPLE[c.id]
-  const att = useMemo(() => attendanceSummary(c.id), [c.id])
+  const att = useMemo(() => attendanceSummary(c.id), [attendanceSummary, c.id])
   const m = MONEY[c.id]
   const payroll = LEDGER[c.id][CURRENT_PERIOD].payroll
 

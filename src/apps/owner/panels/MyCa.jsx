@@ -10,15 +10,11 @@ import {
 } from 'lucide-react'
 import { Card, CardHead, Pill, Table, Bar, Field } from '../../../components/ui.jsx'
 import { Note, AutoTag } from '../../../components/bits.jsx'
-import { FIRM, staffById } from '../../../data/practice.js'
-import { DOC_REQUESTS } from '../../../data/recon.js'
-import { forClient, isDone } from '../../../data/compliance.js'
-import { LEDGER } from '../../../data/periods.js'
-import { CURRENT_PERIOD } from '../../../data/practice.js'
-import { MONEY } from '../../../data/business.js'
+import { isDone } from '../../../lib/obligations.js'
 import { inr, inrShort, dateFull } from '../../../lib/format.js'
 import { daysBetween } from '../../../lib/dates.js'
 import { useApp } from '../../../lib/store.jsx'
+import { useRepo } from '../../../repo/index.js'
 
 const NOW = '2026-09-10'
 
@@ -36,6 +32,7 @@ const OWNER_WORDS = {
 
 export default function MyCa({ client: c, accent }) {
   const { docStatusOf, docGotOf, uploadDoc, uploadedNow, statusOf } = useApp()
+  const { FIRM, staffById, DOC_REQUESTS, forClient, LEDGER, CURRENT_PERIOD, MONEY } = useRepo()
   const staff = staffById[c.staffId]
   const row = LEDGER[c.id][CURRENT_PERIOD]
   const m = MONEY[c.id]
@@ -48,7 +45,7 @@ export default function MyCa({ client: c, accent }) {
       .filter((o) => o.kind !== 'Internal')
       .sort((a, b) => (a.due < b.due ? -1 : 1))
       .slice(0, 14),
-    [c.id],
+    [forClient, c.id],
   )
   const payable = obligations.filter((o) => !isDone({ ...o, status: statusOf(o) }) && o.amount)
 

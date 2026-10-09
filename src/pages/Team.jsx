@@ -3,18 +3,18 @@ import { Link } from 'react-router-dom'
 import { UsersRound, Clock, AlertOctagon, Phone, Mail, CheckCheck } from 'lucide-react'
 import { Card, CardHead, PageHead, Kpi, Pill, Table, MiniStat, Bar, Avatar, Segmented } from '../components/ui.jsx'
 import { ClientChip, DueCell, StatusPill, Note, Readiness } from '../components/bits.jsx'
-import { STAFF, staffById, clientById, CURRENT_PERIOD, LEDGER, isDone } from '../data/index.js'
-import { staffWorkload } from '../lib/derive.js'
-import { openObligations } from '../data/compliance.js'
+import { isDone } from '../lib/obligations.js'
 import { inr, inrShort, num } from '../lib/format.js'
 import { useApp } from '../lib/store.jsx'
+import { useRepo } from '../repo/index.js'
 
 export default function Team() {
   const { statusOf, markReady, fileReturn } = useApp()
+  const { STAFF, staffById, clientById, CURRENT_PERIOD, LEDGER, openObligations, staffWorkload } = useRepo()
   const [pick, setPick] = useState('all')
 
-  const load = useMemo(() => staffWorkload(), [])
-  const open = useMemo(() => openObligations(), [])
+  const load = useMemo(() => staffWorkload(), [staffWorkload])
+  const open = useMemo(() => openObligations(), [openObligations])
   const rows = pick === 'all' ? open : open.filter((o) => o.assignee === pick)
 
   const totalHours = load.reduce((s, x) => s + x.weekHours, 0)
@@ -152,7 +152,7 @@ export default function Team() {
               ? <Pill tone="ok" dot>Automatic</Pill>
               : <Pill tone="warn" dot>{c.books.mode}</Pill> },
           ]}
-          rows={[...clientList()]}
+          rows={Object.values(clientById)}
           keyFn={(c) => c.id}
           initialSort={{ key: 'hours', dir: 'desc' }}
           pageSize={0}
@@ -160,8 +160,4 @@ export default function Team() {
       </Card>
     </div>
   )
-}
-
-function clientList() {
-  return Object.values(clientById)
 }

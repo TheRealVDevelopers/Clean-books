@@ -2,12 +2,14 @@ import { useMemo, useState } from 'react'
 import { Receipt, Users, Landmark, AlertOctagon, Download, CheckCheck } from 'lucide-react'
 import { Card, CardHead, PageHead, Kpi, Pill, Table, Tabs, MiniStat, Empty } from '../components/ui.jsx'
 import { ClientChip, DueCell, StatusPill, Note, AutoTag } from '../components/bits.jsx'
-import { CLIENTS, clientById, staffById, CURRENT_PERIOD, LEDGER, OBLIGATIONS, isDone } from '../data/index.js'
+import { isDone } from '../lib/obligations.js'
 import { inr, inrShort, num, toCsv } from '../lib/format.js'
 import { pLabel } from '../lib/dates.js'
 import { useApp } from '../lib/store.jsx'
+import { useRepo } from '../repo/index.js'
 
 export default function Tds() {
+  const { CLIENTS, clientById, staffById, CURRENT_PERIOD, LEDGER, OBLIGATIONS } = useRepo()
   const { statusOf, fileReturn, markReady, toast } = useApp()
   const [tab, setTab] = useState('tds')
 

@@ -63,3 +63,16 @@ export const PIPELINE_TONE = {
   'Free Tier': 'mute', 'Discovery Done': 'info', 'Proposal Sent': 'warn',
   'Build In Progress': 'brand', 'Live & Billing': 'ok', 'Declined': 'bad',
 }
+
+export const DOC_STATUS_TONE = {
+  Received: 'ok', 'Partly received': 'warn', Pending: 'info', Overdue: 'bad',
+}
+
+export const AUTHORITY_TONE = {
+  GST: 'brand', 'Income Tax': 'info', PF: 'warn', ESI: 'warn', MCA: 'mute',
+}
+
+export const ACTIVITY_TONE = {
+  auto: 'ok', client: 'brand', chase: 'warn', alert: 'bad',
+  filing: 'info', notice: 'bad', note: 'mute',
+}

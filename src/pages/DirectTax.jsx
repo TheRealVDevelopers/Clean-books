@@ -2,11 +2,13 @@ import { useMemo, useState } from 'react'
 import { Landmark, ClipboardCheck, Building2, FileStack, Download, AlertOctagon } from 'lucide-react'
 import { Card, CardHead, PageHead, Kpi, Pill, Table, Tabs, MiniStat, Bar, Empty, Field } from '../components/ui.jsx'
 import { ClientChip, DueCell, StatusPill, Note } from '../components/bits.jsx'
-import { CLIENTS, clientById, staffById, OBLIGATIONS, isDone, estimatedTax, PERIOD_KEYS, LEDGER } from '../data/index.js'
+import { isDone } from '../lib/obligations.js'
 import { inr, inrShort, pct, toCsv, dateFull } from '../lib/format.js'
 import { useApp } from '../lib/store.jsx'
+import { useRepo } from '../repo/index.js'
 
 export default function DirectTax() {
+  const { CLIENTS, clientById, staffById, OBLIGATIONS, estimatedTax, PERIOD_KEYS, LEDGER } = useRepo()
   const { statusOf, markReady, fileReturn, toast } = useApp()
   const [tab, setTab] = useState('advance')
 

@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom'
 import { GitCompareArrows, AlertOctagon, FileWarning, Download, Send, Sparkles } from 'lucide-react'
 import { Card, CardHead, PageHead, Kpi, Pill, Table, Segmented, MiniStat, Bar, Empty } from '../components/ui.jsx'
 import { ClientChip, Note, AutoTag } from '../components/bits.jsx'
-import { ITC_ROWS, itcTotals } from '../data/recon.js'
-import { CLIENTS, clientById, staffById, CURRENT_PERIOD, LEDGER } from '../data/index.js'
 import { inr, inrShort, num, pct, toCsv } from '../lib/format.js'
 import { pLabel, dueOn } from '../lib/dates.js'
 import { useApp } from '../lib/store.jsx'
+import { useRepo } from '../repo/index.js'
 
 export default function Itc() {
+  const { ITC_ROWS, itcTotals, CLIENTS, clientById, staffById, CURRENT_PERIOD, LEDGER } = useRepo()
   const { toast } = useApp()
   const [reason, setReason] = useState('all')
   const [client, setClient] = useState('all')

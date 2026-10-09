@@ -4,20 +4,17 @@ import {
   Target, Camera, Truck, ChevronDown, ChevronUp, Clock3,
 } from 'lucide-react'
 import { Card, CardHead, Pill } from '../../../components/ui.jsx'
-import { SNAPSHOTS } from '../../../data/ops.js'
-import { MONEY, ACTIONS, FEED, attendanceSummary } from '../../../data/business.js'
-import { DOC_REQUESTS } from '../../../data/recon.js'
-import { forClient, isDone } from '../../../data/compliance.js'
-import { LEDGER } from '../../../data/periods.js'
-import { CURRENT_PERIOD } from '../../../data/practice.js'
+import { isDone } from '../../../lib/obligations.js'
 import { inr, inrShort } from '../../../lib/format.js'
 import { useApp } from '../../../lib/store.jsx'
+import { useRepo } from '../../../repo/index.js'
 
 export default function Today({ client, accent, onGo }) {
   const [details, setDetails] = useState(false)
   const { docStatusOf, statusOf, ownerMissionDone, completeOwnerMission } = useApp()
+  const { SNAPSHOTS, MONEY, ACTIONS, FEED, attendanceSummary, DOC_REQUESTS, forClient, LEDGER, CURRENT_PERIOD } = useRepo()
   const money = MONEY[client.id]
-  const attendance = useMemo(() => attendanceSummary(client.id), [client.id])
+  const attendance = useMemo(() => attendanceSummary(client.id), [attendanceSummary, client.id])
   const snapshot = SNAPSHOTS[client.id]
   const feed = FEED[client.id] || []
   const documents = DOC_REQUESTS.filter((doc) => doc.clientId === client.id && docStatusOf(doc) !== 'Received')

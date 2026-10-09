@@ -13,11 +13,9 @@ import { Card, CardHead, PageHead, Kpi, Pill, Donut, Table, Empty, MiniStat, Bar
 import { ClientChip, StatusPill, DueCell, Readiness, SectionTitle, Note, AutoTag, VerticalIcon } from '../components/bits.jsx'
 import ChartBox from '../components/ChartBox.jsx'
 import { useApp } from '../lib/store.jsx'
-import {
-  CLIENTS, clientById, CURRENT_PERIOD, FIRM, WATCHLIST, ACTIVITY, ACTIVITY_TONE, AUTOMATION,
-  LEDGER, OBLIGATIONS, dueWithin, overdueObligations, isDone, daysLeft, sortByDue,
-} from '../data/index.js'
-import { practiceKpis, alerts, turnoverSeries, readinessBuckets, kindLoad, filingBoard } from '../lib/derive.js'
+import { useRepo } from '../repo/index.js'
+import { isDone, sortByDue } from '../lib/obligations.js'
+import { ACTIVITY_TONE } from '../lib/status.js'
 import { inr, inrShort, axisMoney, rel, num, pct } from '../lib/format.js'
 import { pLabel, pLabelLong } from '../lib/dates.js'
 
@@ -28,17 +26,22 @@ const ICONS = {
 
 export default function Dashboard() {
   const { whoInfo, statusOf, fileReturn, markReady, docStatusOf } = useApp()
-  const k = useMemo(() => practiceKpis(docStatusOf), [docStatusOf])
-  const feed = useMemo(() => alerts(docStatusOf), [docStatusOf])
-  const series = useMemo(() => turnoverSeries(), [])
-  const buckets = useMemo(() => readinessBuckets(), [])
-  const kinds = useMemo(() => kindLoad(), [])
-  const board = useMemo(() => filingBoard(CURRENT_PERIOD, docStatusOf), [docStatusOf])
+  const {
+    FIRM, CURRENT_PERIOD, clientById, WATCHLIST, OBLIGATIONS, overdueObligations, dueWithin,
+    ACTIVITY, AUTOMATION, revenue,
+    practiceKpis, alerts, turnoverSeries, readinessBuckets, kindLoad, filingBoard,
+  } = useRepo()
+  const k = useMemo(() => practiceKpis(docStatusOf), [practiceKpis, docStatusOf])
+  const feed = useMemo(() => alerts(docStatusOf), [alerts, docStatusOf])
+  const series = useMemo(() => turnoverSeries(), [turnoverSeries])
+  const buckets = useMemo(() => readinessBuckets(), [readinessBuckets])
+  const kinds = useMemo(() => kindLoad(), [kindLoad])
+  const board = useMemo(() => filingBoard(CURRENT_PERIOD, docStatusOf), [filingBoard, CURRENT_PERIOD, docStatusOf])
 
-  const week = useMemo(() => sortByDue([...overdueObligations(), ...dueWithin(7)]), [])
+  const week = useMemo(() => sortByDue([...overdueObligations(), ...dueWithin(7)]), [overdueObligations, dueWithin])
   const gstr1 = useMemo(
     () => OBLIGATIONS.filter((o) => o.form === 'GSTR-1' && o.period === CURRENT_PERIOD),
-    [],
+    [OBLIGATIONS, CURRENT_PERIOD],
   )
   const r1Ready = gstr1.filter((o) => ['Filed', 'Filed Late', 'Ready to File'].includes(statusOf(o))).length
 
@@ -56,7 +59,7 @@ export default function Dashboard() {
         actions={
           <>
             <Link to="/gst" className="btn-ghost">Open GST workspace</Link>
-            <Link to="/revenue" className="btn-primary"><IndianRupee size={14} /> My revenue share</Link>
+            {revenue && <Link to="/revenue" className="btn-primary"><IndianRupee size={14} /> My revenue share</Link>}
           </>
         }
       />
@@ -94,9 +97,11 @@ export default function Dashboard() {
           sub="All on manual-data clients" />
         <Kpi label="Tax payable this cycle" value={inrShort(k.taxToPay)} icon={Landmark} tone="info"
           sub="GSTR-3B cash across the book" />
-        <Kpi label="Your 20% share" value={inr(k.shareMonth)} icon={IndianRupee} tone="ok"
-          sub={inr(k.sharePaid) + ' received so far'}
-          foot={<Link to="/revenue" className="text-[11.5px] font-bold text-ok-600 flex items-center gap-1">Statement <ArrowRight size={11} /></Link>} />
+        {revenue && (
+          <Kpi label="Your 20% share" value={inr(k.shareMonth)} icon={IndianRupee} tone="ok"
+            sub={inr(k.sharePaid) + ' received so far'}
+            foot={<Link to="/revenue" className="text-[11.5px] font-bold text-ok-600 flex items-center gap-1">Statement <ArrowRight size={11} /></Link>} />
+        )}
       </div>
 
       {/* ------------------------------------------------- work queue + alerts */}

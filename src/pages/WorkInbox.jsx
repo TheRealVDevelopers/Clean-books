@@ -2,13 +2,15 @@ import { useMemo, useState } from 'react'
 import { CheckCircle2, Clock3, FileText, ReceiptText, BellRing, ClipboardCheck, History, XCircle } from 'lucide-react'
 import { Card, CardHead, PageHead, Pill, Table, Segmented, Empty } from '../components/ui.jsx'
 import { ClientChip, Note } from '../components/bits.jsx'
-import { CLIENTS, CURRENT_PERIOD, OBLIGATIONS, DOC_REQUESTS, isDone } from '../data/index.js'
+import { isDone } from '../lib/obligations.js'
 import { inr, rel } from '../lib/format.js'
 import { useApp } from '../lib/store.jsx'
+import { useRepo } from '../repo/index.js'
 
 export default function WorkInbox() {
   const [tab, setTab] = useState('tasks')
   const { statusOf, docStatusOf, receiptsFor, reviewReceipt, taskStatusOf, completeTask, auditEvents } = useApp()
+  const { CLIENTS, CURRENT_PERIOD, OBLIGATIONS, DOC_REQUESTS } = useRepo()
   const receipts = CLIENTS.flatMap((client) => receiptsFor(client.id).map((receipt) => ({ ...receipt, client })))
   const tasks = useMemo(() => {
     const documents = DOC_REQUESTS.filter((doc) => docStatusOf(doc) !== 'Received').map((doc) => ({
@@ -19,7 +21,7 @@ export default function WorkInbox() {
         id: 'filing:' + item.id, type: 'Filing review', title: item.form + ' · ' + item.periodLabel, sub: item.note || 'Review and prepare for filing', client: CLIENTS.find((client) => client.id === item.clientId), tone: item.status === 'Awaiting Data' || item.status === 'Blocked' ? 'bad' : 'brand', icon: ClipboardCheck,
       }))
     return [...documents, ...filing]
-  }, [statusOf, docStatusOf])
+  }, [CLIENTS, CURRENT_PERIOD, OBLIGATIONS, DOC_REQUESTS, statusOf, docStatusOf])
   const openTasks = tasks.filter((task) => taskStatusOf(task.id) !== 'Done')
 
   return <div className="space-y-5">

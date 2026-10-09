@@ -6,25 +6,13 @@ import {
 } from 'lucide-react'
 import { Card, CardHead, PageHead, Pill, Field, MiniStat, Avatar, Table } from '../components/ui.jsx'
 import { Note, SectionTitle } from '../components/bits.jsx'
-import { FIRM, STAFF, CLIENTS, revenue } from '../data/index.js'
 import { inr } from '../lib/format.js'
 import { useApp } from '../lib/store.jsx'
-
-const INTEGRATIONS = [
-  { name: 'GST portal (GSTN API)', detail: 'Return filing, 2A/2B pull, ledger balances', status: 'Connected', tone: 'ok', scope: 'All 11 registered clients' },
-  { name: 'e-Invoice IRP', detail: 'IRN generation and cancellation', status: 'Connected', tone: 'ok', scope: 'Precision Auto, Sri Balaji' },
-  { name: 'TRACES', detail: 'Challan status, 26AS, Form 16A download', status: 'Connected', tone: 'ok', scope: '9 clients with TAN' },
-  { name: 'Income tax e-filing', detail: 'ITR upload, notice inbox, DSC register', status: 'Connected', tone: 'ok', scope: 'All 12 clients' },
-  { name: 'MCA V3', detail: 'AOC-4, MGT-7, DIR-3 KYC', status: 'Connected', tone: 'ok', scope: '3 companies, 1 LLP' },
-  { name: 'Real V client applications', detail: 'Sales, purchase, payroll and payment feeds', status: 'Connected', tone: 'ok', scope: '8 clients live' },
-  { name: 'Bank feeds (account aggregator)', detail: 'Daily statement pull for reconciliation', status: 'Partial', tone: 'warn', scope: '8 of 12 clients consented' },
-  { name: 'Tally import', detail: 'Backup file parser for clients not yet on an app', status: 'Manual', tone: 'bad', scope: 'Sharada Medicals only' },
-  { name: 'EPFO / ESIC', detail: 'ECR upload and challan download', status: 'Connected', tone: 'ok', scope: '9 clients' },
-  { name: 'WhatsApp Business', detail: 'Reminders to clients without an app', status: 'Connected', tone: 'ok', scope: '4 manual clients' },
-]
+import { useRepo } from '../repo/index.js'
 
 export default function Settings() {
   const { theme, toggleTheme, resetDemo, actionCount, toast } = useApp()
+  const { FIRM, STAFF, CLIENTS, PORTALS, revenue } = useRepo()
   const [prefs, setPrefs] = useState({
     dueIn7: true, dueTomorrow: true, overdue: true, noticeReceived: true,
     docUploaded: true, thresholdCrossed: true, payoutCredited: true, weeklyDigest: false,
@@ -75,9 +63,9 @@ export default function Settings() {
 
         <Card className="xl:col-span-2 overflow-hidden">
           <CardHead title="Connections" sub="Where the data comes from and where returns go out" icon={Plug}
-            right={<Pill tone="ok">{INTEGRATIONS.filter((i) => i.status === 'Connected').length} of {INTEGRATIONS.length} live</Pill>} />
+            right={<Pill tone="ok">{PORTALS.filter((i) => i.status === 'Connected').length} of {PORTALS.length} live</Pill>} />
           <div className="divide-y divide-line max-h-[520px] overflow-y-auto">
-            {INTEGRATIONS.map((i) => (
+            {PORTALS.map((i) => (
               <div key={i.name} className="px-4 py-3 flex items-start gap-3">
                 <span className={'w-7 h-7 rounded-lg grid place-items-center shrink-0 ' +
                   (i.tone === 'ok' ? 'bg-ok-50 text-ok-600' : i.tone === 'warn' ? 'bg-warn-50 text-warn-600' : 'bg-bad-50 text-bad-600')}>
@@ -125,27 +113,29 @@ export default function Settings() {
           </div>
         </Card>
 
-        <Card>
-          <CardHead title="The referral agreement" sub="What CleanBook costs, and what it pays" icon={Handshake} />
-          <div className="p-4 space-y-3">
-            <div className="rounded-xl bg-ok-50 border border-ok-500/25 p-3.5">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-ok-700/70">Dashboard cost</p>
-              <p className="text-[22px] font-extrabold text-ok-700 num leading-tight">₹0</p>
-              <p className="text-[11.5px] text-ok-700/80 mt-0.5">Free forever, for every client in your book</p>
+        {revenue && (
+          <Card>
+            <CardHead title="The referral agreement" sub="What CleanBook costs, and what it pays" icon={Handshake} />
+            <div className="p-4 space-y-3">
+              <div className="rounded-xl bg-ok-50 border border-ok-500/25 p-3.5">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-ok-700/70">Dashboard cost</p>
+                <p className="text-[22px] font-extrabold text-ok-700 num leading-tight">₹0</p>
+                <p className="text-[11.5px] text-ok-700/80 mt-0.5">Free forever, for every client in your book</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Your share" value={revenue.TERMS.sharePct + '% of gross'} />
+                <Field label="Paid on" value={'The ' + revenue.TERMS.payoutDay + 'th'} />
+              </div>
+              <Field label="Earning right now" value={inr(revenue.CURRENT_MONTH.gross) + ' / month'} tone="ok" />
+              <Field label="Agreement" value={revenue.TERMS.agreement} />
+              <Note tone="warn" title="Professional-conduct check">
+                An ongoing revenue-linked arrangement needs to be looked at against the Chartered Accountants Act, 1949
+                before it is signed. See the note on the revenue share page.
+              </Note>
+              <Link to="/revenue" className="btn-ghost w-full justify-center">Open revenue share</Link>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Your share" value={revenue.TERMS.sharePct + '% of gross'} />
-              <Field label="Paid on" value={'The ' + revenue.TERMS.payoutDay + 'th'} />
-            </div>
-            <Field label="Earning right now" value={inr(revenue.CURRENT_MONTH.gross) + ' / month'} tone="ok" />
-            <Field label="Agreement" value={revenue.TERMS.agreement} />
-            <Note tone="warn" title="Professional-conduct check">
-              An ongoing revenue-linked arrangement needs to be looked at against the Chartered Accountants Act, 1949
-              before it is signed. See the note on the revenue share page.
-            </Note>
-            <Link to="/revenue" className="btn-ghost w-full justify-center">Open revenue share</Link>
-          </div>
-        </Card>
+          </Card>
+        )}
       </div>
 
       <Card className="overflow-hidden">

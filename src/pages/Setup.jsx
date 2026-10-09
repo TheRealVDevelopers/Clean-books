@@ -3,13 +3,14 @@ import { Building2, CheckCircle2, UserPlus, Users } from 'lucide-react'
 import { Card, CardHead, Pill } from '../components/ui.jsx'
 import { useAuth } from '../lib/auth.jsx'
 import { useApp } from '../lib/store.jsx'
-import { createClient, createInvitation, saveFirmProfile } from '../lib/foundation.js'
+import { useRepo } from '../repo/index.js'
 
 const EMPTY_CLIENT = { name: '', legalName: '', owner: '', email: '', phone: '', pan: '', gstin: '', vertical: 'transport', gstScheme: 'regular', filingFrequency: 'monthly', entityType: 'proprietorship', pf: false, esi: false, pt: true, taxAudit: false }
 
 export default function Setup() {
   const auth = useAuth()
   const { toast } = useApp()
+  const { createClient, createInvitation, saveFirmProfile } = useRepo()
   const [firm, setFirm] = useState({ name: '', registrationNumber: '', phone: '', city: 'Bengaluru', state: 'Karnataka' })
   const [client, setClient] = useState(EMPTY_CLIENT)
   const [invite, setInvite] = useState({ email: '', role: 'staff', clientIds: '' })

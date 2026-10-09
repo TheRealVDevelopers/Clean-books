@@ -3,14 +3,15 @@ import { Link } from 'react-router-dom'
 import { FolderOpen, Send, Clock, Sparkles, MessageSquareOff, AlertOctagon, Zap } from 'lucide-react'
 import { Card, CardHead, PageHead, Kpi, Pill, Table, Tabs, MiniStat, Bar, Empty } from '../components/ui.jsx'
 import { ClientChip, Readiness, Note, AutoTag, SectionTitle } from '../components/bits.jsx'
-import { DOC_REQUESTS, DOC_STATUS_TONE, CHASE_STATS } from '../data/recon.js'
-import { CLIENTS, clientById, staffById, CURRENT_PERIOD, LEDGER, AUTOMATION } from '../data/index.js'
+import { DOC_STATUS_TONE } from '../lib/status.js'
 import { inr, inrShort, num, pct, dateFull } from '../lib/format.js'
 import { pLabel } from '../lib/dates.js'
 import { useApp } from '../lib/store.jsx'
+import { useRepo } from '../repo/index.js'
 
 export default function Documents() {
   const { remind, remindedOf, toast, docStatusOf, docGotOf, uploadedNow } = useApp()
+  const { DOC_REQUESTS, CHASE_STATS, CLIENTS, clientById, staffById, CURRENT_PERIOD, LEDGER, AUTOMATION } = useRepo()
   const [tab, setTab] = useState('open')
 
   const rows = useMemo(() => {
@@ -19,7 +20,7 @@ export default function Documents() {
     if (tab === 'app') return DOC_REQUESTS.filter((d) => d.onApp)
     if (tab === 'manual') return DOC_REQUESTS.filter((d) => !d.onApp)
     return DOC_REQUESTS
-  }, [tab, docStatusOf])
+  }, [DOC_REQUESTS, tab, docStatusOf])
 
   const open = DOC_REQUESTS.filter((d) => docStatusOf(d) !== 'Received')
   const blockedValue = open.reduce((s, d) => s + (d.value || 0), 0)

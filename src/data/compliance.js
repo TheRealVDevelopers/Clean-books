@@ -5,10 +5,9 @@
 import { CLIENTS, clientById } from './clients.js'
 import { CURRENT_PERIOD, TODAY } from './practice.js'
 import { LEDGER } from './periods.js'
-import { addMonths, dueOn, iso, pLabel, quarterOf, fyOf, daysBetween } from '../lib/dates.js'
+import { addMonths, dueOn, pLabel, quarterOf, fyOf } from '../lib/dates.js'
+import { obligationQueries } from '../lib/obligations.js'
 import { rngFor, iBetween } from '../lib/rng.js'
-
-const NOW = iso(TODAY)
 
 // Net profit margin used to estimate advance tax. Rough trade averages — good
 // enough for a planning number, which is all an advance-tax estimate ever is.
@@ -241,18 +240,7 @@ function build() {
 export const OBLIGATIONS = build()
 
 /* ------------------------------------------------------------------ queries */
-export const DONE = ['Filed', 'Filed Late', 'Not Applicable']
-export const isDone = (o) => DONE.includes(o.status)
-export const daysLeft = (o) => daysBetween(NOW, o.due)
-
-export const openObligations = () => OBLIGATIONS.filter((o) => !isDone(o))
-export const overdueObligations = () => openObligations().filter((o) => daysLeft(o) < 0)
-export const dueWithin = (days) => openObligations().filter((o) => daysLeft(o) <= days && daysLeft(o) >= 0)
-export const forClient = (id) => OBLIGATIONS.filter((o) => o.clientId === id)
-export const forStaff = (id) => OBLIGATIONS.filter((o) => o.assignee === id)
-
-export const KINDS = ['GST', 'TDS', 'Payroll', 'Direct Tax', 'ROC', 'Internal']
-
-export const withClient = (list) => list.map((o) => ({ ...o, client: clientById[o.clientId] }))
-
-export const sortByDue = (list) => [...list].sort((a, b) => (a.due < b.due ? -1 : a.due > b.due ? 1 : 0))
+export { DONE, isDone, KINDS, sortByDue } from '../lib/obligations.js'
+export const {
+  daysLeft, openObligations, overdueObligations, dueWithin, forClient, forStaff, withClient,
+} = obligationQueries(OBLIGATIONS, TODAY, clientById)

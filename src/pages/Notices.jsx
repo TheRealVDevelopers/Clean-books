@@ -3,15 +3,15 @@ import { Link } from 'react-router-dom'
 import { ScrollText, AlertOctagon, Gavel, IndianRupee, CalendarClock, FileText } from 'lucide-react'
 import { Card, CardHead, PageHead, Kpi, Pill, Table, Segmented, MiniStat, Drawer, Field, Empty } from '../components/ui.jsx'
 import { ClientChip, DueCell, Note } from '../components/bits.jsx'
-import { NOTICES, AUTHORITY_TONE } from '../data/notices.js'
-import { clientById, staffById } from '../data/index.js'
-import { NOTICE_TONE, RISK_TONE } from '../lib/status.js'
+import { NOTICE_TONE, RISK_TONE, AUTHORITY_TONE } from '../lib/status.js'
 import { inr, inrShort, dateFull } from '../lib/format.js'
 import { daysBetween } from '../lib/dates.js'
+import { useRepo } from '../repo/index.js'
 
 const NOW = '2026-09-10'
 
 export default function Notices() {
+  const { NOTICES, clientById, staffById } = useRepo()
   const [filter, setFilter] = useState('all')
   const [open, setOpen] = useState(null)
 

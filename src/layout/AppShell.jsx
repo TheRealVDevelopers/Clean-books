@@ -8,9 +8,8 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { useApp } from '../lib/store.jsx'
-import { FIRM, STAFF, CLIENTS, CURRENT_PERIOD } from '../data/index.js'
-import { practiceKpis, alerts } from '../lib/derive.js'
-import { OBLIGATIONS } from '../data/compliance.js'
+import { useRepo } from '../repo/index.js'
+import { IS_DEMO } from '../lib/mode.js'
 import { inr, inrShort } from '../lib/format.js'
 import { pLabel } from '../lib/dates.js'
 import { Pill, Avatar } from '../components/ui.jsx'
@@ -25,25 +24,25 @@ const NAV = [
   ] },
   { section: 'Client book', items: [
     { to: '/clients', label: 'All Clients', icon: Users },
-    { to: '/apps', label: 'Their Applications', icon: MonitorSmartphone },
+    { to: '/apps', label: 'Their Applications', icon: MonitorSmartphone, demo: true },
     { to: '/documents', label: 'Data & Documents', icon: FolderOpen, badge: 'docsOverdue' },
   ] },
   { section: 'Filing desk', items: [
-    { to: '/assistant', label: 'CA Assistant', icon: Sparkles },
-    { to: '/gst', label: 'GST Workspace', icon: FileSpreadsheet },
-    { to: '/itc', label: 'ITC vs GSTR-2B', icon: GitCompareArrows },
-    { to: '/tds', label: 'TDS & Payroll', icon: Receipt },
-    { to: '/direct-tax', label: 'Direct Tax & ROC', icon: Landmark },
+    { to: '/assistant', label: 'CA Assistant', icon: Sparkles, demo: true },
+    { to: '/gst', label: 'GST Workspace', icon: FileSpreadsheet, demo: true },
+    { to: '/itc', label: 'ITC vs GSTR-2B', icon: GitCompareArrows, demo: true },
+    { to: '/tds', label: 'TDS & Payroll', icon: Receipt, demo: true },
+    { to: '/direct-tax', label: 'Direct Tax & ROC', icon: Landmark, demo: true },
   ] },
   { section: 'Risk', items: [
-    { to: '/notices', label: 'Notices & Demands', icon: ScrollText, badge: 'noticesOpen' },
+    { to: '/notices', label: 'Notices & Demands', icon: ScrollText, badge: 'noticesOpen', demo: true },
   ] },
   { section: 'My earnings', items: [
-    { to: '/revenue', label: 'Revenue Share', icon: IndianRupee, accent: true },
+    { to: '/revenue', label: 'Revenue Share', icon: IndianRupee, accent: true, demo: true },
   ] },
   { section: 'Practice admin', items: [
     { to: '/setup', label: 'Firm & Onboarding', icon: Building2 },
-    { to: '/integrations', label: 'Integrations', icon: PlugZap },
+    { to: '/integrations', label: 'Integrations', icon: PlugZap, demo: true },
     { to: '/access', label: 'Users & Access', icon: ShieldCheck },
     { to: '/team', label: 'Team & Workload', icon: UsersRound },
     { to: '/reports', label: 'Reports', icon: BarChart3 },
@@ -51,15 +50,21 @@ const NAV = [
   ] },
 ]
 
+// The live build has no demo-only screens (see App.jsx), so it has no links to them.
+const MENU = NAV
+  .map((grp) => ({ ...grp, items: grp.items.filter((it) => IS_DEMO || !it.demo) }))
+  .filter((grp) => grp.items.length)
+
 export default function AppShell({ children }) {
   const { theme, toggleTheme, who, setWho, whoInfo, setCmdOpen, resetDemo, actionCount, docStatusOf } = useApp()
+  const { FIRM, STAFF, CLIENTS, CURRENT_PERIOD, OBLIGATIONS, practiceKpis, alerts, revenue } = useRepo()
   const [mobileNav, setMobileNav] = useState(false)
   const [bell, setBell] = useState(false)
   const [whoMenu, setWhoMenu] = useState(false)
   const nav = useNavigate()
 
-  const k = useMemo(() => practiceKpis(docStatusOf), [docStatusOf])
-  const feed = useMemo(() => alerts(docStatusOf), [docStatusOf])
+  const k = useMemo(() => practiceKpis(docStatusOf), [practiceKpis, docStatusOf])
+  const feed = useMemo(() => alerts(docStatusOf), [alerts, docStatusOf])
   const critical = feed.filter((a) => a.severity === 'critical').length
 
   return (
@@ -79,7 +84,7 @@ export default function AppShell({ children }) {
         </div>
 
         <nav className="flex-1 overflow-y-auto py-3 px-2.5">
-          {NAV.map((grp) => (
+          {MENU.map((grp) => (
             <div key={grp.section} className="mb-3">
               <p className="label px-2 mb-1">{grp.section}</p>
               {grp.items.map((it) => (
@@ -104,11 +109,13 @@ export default function AppShell({ children }) {
         </nav>
 
         <div className="p-2.5 border-t border-line shrink-0 space-y-2">
-          <Link to="/revenue" className="block rounded-lg bg-ok-50 border border-ok-500/25 px-3 py-2.5 hover:bg-ok-100 transition-colors">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-ok-700/70">Your share this month</p>
-            <p className="text-[19px] font-extrabold text-ok-700 num leading-tight mt-0.5">{inr(k.shareMonth)}</p>
-            <p className="text-[10.5px] text-ok-700/80">20% of {inrShort(k.shareMonth * 5)} collected · paid 07 Oct</p>
-          </Link>
+          {revenue && (
+            <Link to="/revenue" className="block rounded-lg bg-ok-50 border border-ok-500/25 px-3 py-2.5 hover:bg-ok-100 transition-colors">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-ok-700/70">Your share this month</p>
+              <p className="text-[19px] font-extrabold text-ok-700 num leading-tight mt-0.5">{inr(k.shareMonth)}</p>
+              <p className="text-[10.5px] text-ok-700/80">20% of {inrShort(k.shareMonth * 5)} collected · paid 07 Oct</p>
+            </Link>
+          )}
           {actionCount > 0 && (
             <button onClick={resetDemo} className="w-full btn-quiet !h-8 justify-center text-[11.5px]">
               <RotateCcw size={12} /> Reset demo ({actionCount})
@@ -235,7 +242,7 @@ export default function AppShell({ children }) {
         <main className="flex-1 p-4 lg:p-6 max-w-[1600px] w-full mx-auto">{children}</main>
 
         <footer className="px-6 py-3 border-t border-line text-[11.5px] text-faint flex flex-wrap gap-x-4 gap-y-1 justify-between">
-          <span>CleanBook · {FIRM.plan} · FRN {FIRM.frn} · demo dataset</span>
+          <span>CleanBook · {FIRM.plan} · FRN {FIRM.frn}{IS_DEMO ? ' · demo dataset' : ''}</span>
           <span>{CLIENTS.length} clients · {OBLIGATIONS.length} obligations tracked · {k.onAuto} on automatic data capture</span>
         </footer>
       </div>
@@ -249,6 +256,7 @@ export default function AppShell({ children }) {
 /* --------------------------------------------------------------- command bar */
 function CommandBar() {
   const { cmdOpen, setCmdOpen } = useApp()
+  const { CLIENTS, OBLIGATIONS } = useRepo()
   const [q, setQ] = useState('')
   const nav = useNavigate()
   if (!cmdOpen) return null
@@ -257,19 +265,18 @@ function CommandBar() {
   const results = []
   if (s) {
     CLIENTS.filter((c) =>
-      c.name.toLowerCase().includes(s) || (c.gstin || '').toLowerCase().includes(s) ||
-      c.verticalLabel.toLowerCase().includes(s) || c.owner.toLowerCase().includes(s),
+      [c.name, c.gstin, c.verticalLabel, c.owner].some((field) => (field || '').toLowerCase().includes(s)),
     ).slice(0, 6).forEach((c) => results.push({
-      type: 'Client', title: c.name, sub: (c.gstin || 'Unregistered') + ' · ' + c.verticalLabel, to: '/clients/' + c.id, client: c,
+      type: 'Client', title: c.name, sub: [c.gstin || 'Unregistered', c.verticalLabel].filter(Boolean).join(' · '), to: '/clients/' + c.id, client: c,
     }))
     const forms = [...new Set(OBLIGATIONS.map((o) => o.form))].filter((f) => f.toLowerCase().includes(s)).slice(0, 4)
     forms.forEach((f) => results.push({ type: 'Form', title: f, sub: 'Open the compliance calendar filtered to ' + f, to: '/calendar' }))
   }
   const quick = [
-    { title: 'Dashboard', to: '/' }, { title: 'GST Workspace — Aug 2026', to: '/gst' },
-    { title: 'ITC vs GSTR-2B', to: '/itc' }, { title: 'Documents still to collect', to: '/documents' },
-    { title: 'Revenue share statement', to: '/revenue' }, { title: 'Notices & demands', to: '/notices' },
-  ]
+    { title: 'Dashboard', to: '/' }, { title: 'GST Workspace — Aug 2026', to: '/gst', demo: true },
+    { title: 'ITC vs GSTR-2B', to: '/itc', demo: true }, { title: 'Documents still to collect', to: '/documents' },
+    { title: 'Revenue share statement', to: '/revenue', demo: true }, { title: 'Notices & demands', to: '/notices', demo: true },
+  ].filter((x) => IS_DEMO || !x.demo)
   const go = (to) => { nav(to); setCmdOpen(false); setQ('') }
 
   return (

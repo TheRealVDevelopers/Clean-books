@@ -4,11 +4,11 @@
 
 import { Card, CardHead, Pill } from '../../../components/ui.jsx'
 import { Note } from '../../../components/bits.jsx'
-import { SNAPSHOTS } from '../../../data/ops.js'
-import { OPS } from '../../../data/business.js'
+import { useRepo } from '../../../repo/index.js'
 import OwnerTable from '../OwnerTable.jsx'
 
 export default function Operations({ client: c, accent }) {
+  const { SNAPSHOTS, OPS } = useRepo()
   const ops = OPS[c.id]
   const snap = SNAPSHOTS[c.id]
   if (!ops) return <Note tone="warn" title="No operations module">This build does not include an operations module yet.</Note>

@@ -214,11 +214,6 @@ export const ACTIVITY = [
   { id: 'A-15', at: '2026-09-06T18:30:00+05:30', clientId: 'CL-04', kind: 'notice', title: 'ASMT-10 scrutiny notice received', detail: 'FY 2024-25, ITC mismatch of ₹2.14 L alleged. Reply due 06 Oct.', icon: 'ScrollText' },
 ]
 
-export const ACTIVITY_TONE = {
-  auto: 'ok', client: 'brand', chase: 'warn', alert: 'bad',
-  filing: 'info', notice: 'bad', note: 'mute',
-}
-
 // How much of the month's document capture happened without a human asking.
 export const AUTOMATION = {
   autoCaptured: 4218,

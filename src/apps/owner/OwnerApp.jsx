@@ -5,24 +5,33 @@
 // who opens this from a hotel room should know how his business is doing
 // before he finishes his coffee.
 
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
 import {
   ArrowLeft, Home, Users, Wallet, ShieldCheck, Sun, Moon, Dumbbell, Truck, UtensilsCrossed, Factory, Plane, Scissors, Hammer, ShoppingBag, GraduationCap, LayoutGrid, Mic, Route, ClipboardList,
 } from 'lucide-react'
-import { clientById } from '../../data/clients.js'
-import { OPS, brandOf, hasApp } from '../../data/business.js'
 import { useApp } from '../../lib/store.jsx'
+import { useRepo } from '../../repo/index.js'
 import { Toasts } from '../../components/bits.jsx'
-import Today from './panels/Today.jsx'
-import Operations from './panels/Operations.jsx'
-import People from './panels/People.jsx'
-import Money from './panels/Money.jsx'
+import ScreenBoundary from '../../components/ScreenBoundary.jsx'
 import MyCa from './panels/MyCa.jsx'
-import NotBuilt from './panels/NotBuilt.jsx'
-import VoiceInvoice from './panels/VoiceInvoice.jsx'
-import EWayBill from './panels/EWayBill.jsx'
-import TripDesk from './panels/TripDesk.jsx'
+
+// Panels only the demo build has. Live mode shows the My CA tab alone until the
+// trade modules are built. The mode test is written out (not IS_DEMO) so the
+// bundler leaves these panels, and their sample data, out of the live build.
+const DEMO_PANELS = import.meta.env.VITE_APP_MODE === 'demo'
+  ? {
+      Today: lazy(() => import('./panels/Today.jsx')),
+      Operations: lazy(() => import('./panels/Operations.jsx')),
+      People: lazy(() => import('./panels/People.jsx')),
+      Money: lazy(() => import('./panels/Money.jsx')),
+      NotBuilt: lazy(() => import('./panels/NotBuilt.jsx')),
+      VoiceInvoice: lazy(() => import('./panels/VoiceInvoice.jsx')),
+      EWayBill: lazy(() => import('./panels/EWayBill.jsx')),
+      TripDesk: lazy(() => import('./panels/TripDesk.jsx')),
+    }
+  : null
+const { Today, Operations, People, Money, NotBuilt, VoiceInvoice, EWayBill, TripDesk } = DEMO_PANELS || {}
 
 const OPS_ICONS = {
   Dumbbell, Truck, UtensilsCrossed, Factory, Plane, Scissors, Hammer, ShoppingBag, GraduationCap,
@@ -37,17 +46,22 @@ const firstName = (full) => {
 export default function OwnerApp() {
   const { id } = useParams()
   const { theme, toggleTheme } = useApp()
-  const [tab, setTab] = useState('today')
+  const { clientById, OPS, brandOf, hasApp, FIRM } = useRepo()
+  const [tab, setTab] = useState(DEMO_PANELS ? 'today' : 'ca')
 
   const c = clientById[id]
   if (!c) return <Navigate to="/apps" replace />
 
   const brand = brandOf(c.id)
   const ops = OPS[c.id]
-  const live = hasApp(c)
+  // In the demo, "live" means Real V has built this business its app. Live
+  // mode has only the My CA tab for now.
+  const live = DEMO_PANELS ? hasApp(c) : true
   const OpsIcon = (ops && OPS_ICONS[ops.icon]) || LayoutGrid
 
-  const tabs = live
+  const tabs = !DEMO_PANELS
+    ? [{ id: 'ca', label: 'My CA', icon: ShieldCheck }]
+    : live
     ? [
         { id: 'today', label: 'Today', icon: Home },
         ...(ops ? [{ id: 'ops', label: ops.label, icon: OpsIcon }] : []),
@@ -72,9 +86,11 @@ export default function OwnerApp() {
             <span className="hidden sm:inline text-white/50">·</span>
             <span className="hidden sm:inline text-white/70">You are seeing what {firstName(c.owner)} sees</span>
             <div className="ml-auto flex items-center gap-1.5">
-              <Link to="/apps" className="hidden sm:inline-flex items-center gap-1.5 font-semibold text-white/80 hover:text-white transition-colors">
-                <LayoutGrid size={13} /> All client apps
-              </Link>
+              {DEMO_PANELS && (
+                <Link to="/apps" className="hidden sm:inline-flex items-center gap-1.5 font-semibold text-white/80 hover:text-white transition-colors">
+                  <LayoutGrid size={13} /> All client apps
+                </Link>
+              )}
               <button onClick={toggleTheme} className="w-7 h-7 grid place-items-center rounded-md hover:bg-white/15 transition-colors" title="Toggle theme">
                 {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
               </button>
@@ -88,11 +104,11 @@ export default function OwnerApp() {
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-[20px] lg:text-[23px] font-extrabold tracking-tight">
-                  {c.realv.appName || c.name}
+                  {c.realv?.appName || c.name}
                 </h1>
-                {live
+                {DEMO_PANELS && (live
                   ? <span className="chip bg-white/20 text-white">Live</span>
-                  : <span className="chip bg-white/20 text-white">{c.realv.status}</span>}
+                  : <span className="chip bg-white/20 text-white">{c.realv.status}</span>)}
               </div>
               <p className="text-[12.5px] text-white/80 mt-0.5">{c.name} · {brand.tagline}</p>
             </div>
@@ -107,7 +123,7 @@ export default function OwnerApp() {
             </div>
           </div>
 
-          {live && (
+          {tabs.length > 0 && (
             <nav className="flex items-center gap-1 overflow-x-auto -mb-px">
               {tabs.map((t) => (
                 <button
@@ -127,24 +143,30 @@ export default function OwnerApp() {
 
       {/* -------------------------------------------------------------- panel */}
       <main className="flex-1 max-w-[1500px] w-full mx-auto p-4 lg:p-6">
-        {!live && <NotBuilt client={c} accent={brand.accent} />}
-        {live && tab === 'today' && <Today client={c} accent={brand.accent} onGo={setTab} />}
-        {live && tab === 'ops' && <Operations client={c} accent={brand.accent} />}
-        {live && tab === 'trips' && <TripDesk client={c} accent={brand.accent} />}
-        {live && tab === 'invoice' && <VoiceInvoice client={c} accent={brand.accent} />}
-        {live && tab === 'eway' && <EWayBill client={c} accent={brand.accent} />}
-        {live && tab === 'people' && <People client={c} accent={brand.accent} />}
-        {live && tab === 'money' && <Money client={c} accent={brand.accent} />}
-        {live && tab === 'ca' && <MyCa client={c} accent={brand.accent} />}
+        <ScreenBoundary key={tab}>
+          <Suspense fallback={null}>
+            {!live && <NotBuilt client={c} accent={brand.accent} />}
+            {live && tab === 'today' && <Today client={c} accent={brand.accent} onGo={setTab} />}
+            {live && tab === 'ops' && <Operations client={c} accent={brand.accent} />}
+            {live && tab === 'trips' && <TripDesk client={c} accent={brand.accent} />}
+            {live && tab === 'invoice' && <VoiceInvoice client={c} accent={brand.accent} />}
+            {live && tab === 'eway' && <EWayBill client={c} accent={brand.accent} />}
+            {live && tab === 'people' && <People client={c} accent={brand.accent} />}
+            {live && tab === 'money' && <Money client={c} accent={brand.accent} />}
+            {live && tab === 'ca' && <MyCa client={c} accent={brand.accent} />}
+          </Suspense>
+        </ScreenBoundary>
       </main>
 
-      <footer className="px-6 py-3 border-t border-line text-[11.5px] text-faint flex flex-wrap gap-x-4 gap-y-1 justify-between max-w-[1500px] w-full mx-auto">
-        <span>{c.realv.appName || c.name} · built for {c.name} by The Real V Developers</span>
-        <span>
-          Compliance data flows to S. Ramanathan &amp; Co. automatically
-          {c.realv.uptime ? ' · uptime ' + c.realv.uptime + '%' : ''}
-        </span>
-      </footer>
+      {DEMO_PANELS && (
+        <footer className="px-6 py-3 border-t border-line text-[11.5px] text-faint flex flex-wrap gap-x-4 gap-y-1 justify-between max-w-[1500px] w-full mx-auto">
+          <span>{c.realv.appName || c.name} · built for {c.name} by The Real V Developers</span>
+          <span>
+            Compliance data flows to {FIRM.name.split(',')[0]} automatically
+            {c.realv.uptime ? ' · uptime ' + c.realv.uptime + '%' : ''}
+          </span>
+        </footer>
+      )}
 
       <Toasts />
     </div>

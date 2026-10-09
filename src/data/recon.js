@@ -120,10 +120,6 @@ export const DOC_REQUESTS = DOCS.map((d, i) => {
   }
 })
 
-export const DOC_STATUS_TONE = {
-  Received: 'ok', 'Partly received': 'warn', Pending: 'info', Overdue: 'bad',
-}
-
 export const docsForClient = (id) => DOC_REQUESTS.filter((d) => d.clientId === id)
 export const openDocs = () => DOC_REQUESTS.filter((d) => d.status !== 'Received')
 

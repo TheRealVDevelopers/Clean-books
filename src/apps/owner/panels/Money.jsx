@@ -7,15 +7,15 @@ import { Bar as RBar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Line, Compos
 import { Card, CardHead, MiniStat, Bar } from '../../../components/ui.jsx'
 import { Note } from '../../../components/bits.jsx'
 import ChartBox from '../../../components/ChartBox.jsx'
-import { MONEY } from '../../../data/business.js'
-import { clientSeries } from '../../../lib/derive.js'
 import { inr, inrShort, axisMoney, pct } from '../../../lib/format.js'
 import { useApp } from '../../../lib/store.jsx'
+import { useRepo } from '../../../repo/index.js'
 
 export default function Money({ client: c, accent }) {
   const { receiptsFor, addReceipt } = useApp()
+  const { MONEY, clientSeries } = useRepo()
   const m = MONEY[c.id]
-  const series = useMemo(() => clientSeries(c.id).slice(-9), [c.id])
+  const series = useMemo(() => clientSeries(c.id).slice(-9), [clientSeries, c.id])
   const receipts = receiptsFor(c.id)
   const runway = m.cashInHand + m.bank
   const committed = m.gstPayable + m.payrollDue

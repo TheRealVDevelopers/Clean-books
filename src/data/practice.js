@@ -40,6 +40,20 @@ export const STAFF = [
 
 export const staffById = Object.fromEntries(STAFF.map((s) => [s.id, s]))
 
+// Portal and feed connections shown on the Settings page.
+export const PORTALS = [
+  { name: 'GST portal (GSTN API)', detail: 'Return filing, 2A/2B pull, ledger balances', status: 'Connected', tone: 'ok', scope: 'All 11 registered clients' },
+  { name: 'e-Invoice IRP', detail: 'IRN generation and cancellation', status: 'Connected', tone: 'ok', scope: 'Precision Auto, Sri Balaji' },
+  { name: 'TRACES', detail: 'Challan status, 26AS, Form 16A download', status: 'Connected', tone: 'ok', scope: '9 clients with TAN' },
+  { name: 'Income tax e-filing', detail: 'ITR upload, notice inbox, DSC register', status: 'Connected', tone: 'ok', scope: 'All 12 clients' },
+  { name: 'MCA V3', detail: 'AOC-4, MGT-7, DIR-3 KYC', status: 'Connected', tone: 'ok', scope: '3 companies, 1 LLP' },
+  { name: 'Real V client applications', detail: 'Sales, purchase, payroll and payment feeds', status: 'Connected', tone: 'ok', scope: '8 clients live' },
+  { name: 'Bank feeds (account aggregator)', detail: 'Daily statement pull for reconciliation', status: 'Partial', tone: 'warn', scope: '8 of 12 clients consented' },
+  { name: 'Tally import', detail: 'Backup file parser for clients not yet on an app', status: 'Manual', tone: 'bad', scope: 'Sharada Medicals only' },
+  { name: 'EPFO / ESIC', detail: 'ECR upload and challan download', status: 'Connected', tone: 'ok', scope: '9 clients' },
+  { name: 'WhatsApp Business', detail: 'Reminders to clients without an app', status: 'Connected', tone: 'ok', scope: '4 manual clients' },
+]
+
 // "Today" for the whole demo. Fixed so the filing calendar always tells the
 // same story on stage — Aug-2026 GST is live, GSTR-1 falls due tomorrow.
 export const TODAY = new Date('2026-09-10T10:30:00+05:30')

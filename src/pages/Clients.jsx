@@ -3,18 +3,19 @@ import { Link } from 'react-router-dom'
 import { Users, Plus, Download, Sparkles, TrendingUp, ShieldAlert, IndianRupee } from 'lucide-react'
 import { Card, CardHead, PageHead, Kpi, Pill, Table, Tabs, MiniStat, Segmented, Bar } from '../components/ui.jsx'
 import { ClientChip, DueCell, Readiness, StatusPill, Note } from '../components/bits.jsx'
-import { CLIENTS, STAFF, staffById, CURRENT_PERIOD, LEDGER, forClient, isDone } from '../data/index.js'
+import { isDone } from '../lib/obligations.js'
 import { PIPELINE_TONE, RISK_TONE } from '../lib/status.js'
 import { inr, inrShort, toCsv, pct } from '../lib/format.js'
-import { practiceKpis } from '../lib/derive.js'
 import { useApp } from '../lib/store.jsx'
+import { useRepo } from '../repo/index.js'
 
 export default function Clients() {
   const { toast } = useApp()
+  const { CLIENTS, STAFF, staffById, CURRENT_PERIOD, LEDGER, forClient, practiceKpis } = useRepo()
   const [tab, setTab] = useState('all')
   const [staff, setStaff] = useState('all')
 
-  const k = useMemo(() => practiceKpis(), [])
+  const k = useMemo(() => practiceKpis(), [practiceKpis])
 
   const rows = useMemo(() => CLIENTS.map((c) => {
     const row = LEDGER[c.id][CURRENT_PERIOD]
@@ -24,7 +25,7 @@ export default function Clients() {
       next: open[0] || null,
       overdue: open.filter((o) => o.due < '2026-09-10').length,
     }
-  }), [])
+  }), [CLIENTS, LEDGER, CURRENT_PERIOD, forClient])
 
   const view = rows.filter((r) => {
     if (tab === 'auto' && r.client.books.mode !== 'CleanBook Auto') return false

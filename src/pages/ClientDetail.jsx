@@ -11,21 +11,20 @@ import {
 import { Card, CardHead, PageHead, Kpi, Pill, Table, Tabs, MiniStat, Field, Empty, Bar } from '../components/ui.jsx'
 import { ClientChip, DueCell, StatusPill, Readiness, Note, AutoTag, VerticalIcon, SectionTitle } from '../components/bits.jsx'
 import ChartBox from '../components/ChartBox.jsx'
-import { clientById, SNAPSHOTS, staffById, CURRENT_PERIOD, PERIOD_KEYS, LEDGER, isDone } from '../data/index.js'
-import { DOC_STATUS_TONE } from '../data/recon.js'
-import { NOTICE_TONE, RISK_TONE, PIPELINE_TONE } from '../lib/status.js'
-import { AUTHORITY_TONE } from '../data/notices.js'
-import { clientBrief } from '../lib/derive.js'
+import { isDone } from '../lib/obligations.js'
+import { NOTICE_TONE, RISK_TONE, PIPELINE_TONE, DOC_STATUS_TONE, AUTHORITY_TONE } from '../lib/status.js'
 import { inr, inrShort, axisMoney, pct, dateFull, num } from '../lib/format.js'
 import { pLabel } from '../lib/dates.js'
 import { useApp } from '../lib/store.jsx'
+import { useRepo } from '../repo/index.js'
 
 export default function ClientDetail() {
   const { id } = useParams()
   const { statusOf, fileReturn, markReady, remind, toast, docStatusOf } = useApp()
+  const { clientById, SNAPSHOTS, staffById, CURRENT_PERIOD, clientBrief } = useRepo()
   const [tab, setTab] = useState('overview')
 
-  const b = useMemo(() => (clientById[id] ? clientBrief(id) : null), [id])
+  const b = useMemo(() => (clientById[id] ? clientBrief(id) : null), [clientById, clientBrief, id])
   if (!b) return <Empty label="No such client" sub="Pick one from the client book" />
 
   const c = b.client
@@ -273,6 +272,7 @@ export default function ClientDetail() {
 
 /* ------------------------------------------------------------------- overview */
 function Overview({ b }) {
+  const { CURRENT_PERIOD } = useRepo()
   const c = b.client
   return (
     <div className="p-4 grid grid-cols-1 xl:grid-cols-3 gap-4">
@@ -366,6 +366,7 @@ function CaptureBar({ label, got, need }) {
 
 /* ----------------------------------------------------------------- GST ledger */
 function GstLedger({ clientId }) {
+  const { PERIOD_KEYS, LEDGER } = useRepo()
   const keys = [...PERIOD_KEYS].reverse().slice(0, 14)
   const rows = keys.map((k) => LEDGER[clientId][k])
   return (
@@ -394,6 +395,7 @@ function GstLedger({ clientId }) {
 
 /* ------------------------------------------------------------- their software */
 function TheApp({ client: c }) {
+  const { CURRENT_PERIOD, LEDGER } = useRepo()
   if (!c.realv.appName) {
     return (
       <div className="p-6">

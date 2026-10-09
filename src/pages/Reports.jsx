@@ -8,14 +8,11 @@ import {
 import { Card, CardHead, PageHead, Pill, Table, MiniStat, Segmented, Kpi } from '../components/ui.jsx'
 import { ClientChip, SectionTitle, Note } from '../components/bits.jsx'
 import ChartBox from '../components/ChartBox.jsx'
-import {
-  CLIENTS, clientById, staffById, CURRENT_PERIOD, PERIOD_KEYS, LEDGER, OBLIGATIONS, ITC_ROWS,
-  DOC_REQUESTS, NOTICES, isDone, revenue,
-} from '../data/index.js'
-import { turnoverSeries, practiceKpis } from '../lib/derive.js'
+import { isDone } from '../lib/obligations.js'
 import { inr, inrShort, axisMoney, num, pct, toCsv } from '../lib/format.js'
 import { pLabel } from '../lib/dates.js'
 import { useApp } from '../lib/store.jsx'
+import { useRepo } from '../repo/index.js'
 
 const save = (name, csv) => {
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
@@ -28,6 +25,10 @@ const save = (name, csv) => {
 
 export default function Reports() {
   const { toast, statusOf } = useApp()
+  const {
+    CLIENTS, clientById, staffById, CURRENT_PERIOD, PERIOD_KEYS, LEDGER, OBLIGATIONS, ITC_ROWS,
+    DOC_REQUESTS, NOTICES, revenue, turnoverSeries, practiceKpis,
+  } = useRepo()
   const [span, setSpan] = useState(12)
 
   const k = useMemo(() => practiceKpis(), [])
@@ -118,7 +119,8 @@ export default function Reports() {
         { label: 'Risk', value: (n) => n.risk },
       ])),
     },
-    {
+    // The referral share has a register only where there is revenue data.
+    ...(revenue ? [{
       id: 'r6', title: 'Revenue share statement', icon: IndianRupee,
       sub: 'Month-wise Real V collections, your 20%, GST charged, TDS deducted and the net credited',
       run: () => save('revenue-share-statement.csv', toCsv(revenue.MONTHS, [
@@ -132,7 +134,7 @@ export default function Reports() {
         { label: 'Status', value: (m) => m.status },
         { label: 'UTR', value: (m) => m.utr || '' },
       ])),
-    },
+    }] : []),
   ]
 
   return (
@@ -200,7 +202,7 @@ export default function Reports() {
 
       <Card className="overflow-hidden">
         <CardHead title="Client-wise position for FY 2026-27" sub="Apr to Aug 2026, five months closed" icon={FileSpreadsheet}
-          right={<Pill tone="mute">{fyRows[0].months} months</Pill>} />
+          right={<Pill tone="mute">{fyRows[0]?.months ?? 0} months</Pill>} />
         <Table
           columns={[
             { key: 'client', label: 'Client', render: (r) => <ClientChip client={r.client} sub={r.client.gstin || 'Unregistered'} /> },

@@ -7,15 +7,12 @@ import {
 } from 'lucide-react'
 import { Card, CardHead, Pill, MiniStat, Bar, Field } from '../../../components/ui.jsx'
 import { Note } from '../../../components/bits.jsx'
-import { SNAPSHOTS } from '../../../data/ops.js'
-import { DOC_REQUESTS } from '../../../data/recon.js'
-import { forClient, isDone, daysLeft } from '../../../data/compliance.js'
-import { NOTICES } from '../../../data/notices.js'
-import { LEDGER } from '../../../data/periods.js'
-import { CURRENT_PERIOD } from '../../../data/practice.js'
+import { isDone } from '../../../lib/obligations.js'
+import { useRepo } from '../../../repo/index.js'
 import { inr, dateFull } from '../../../lib/format.js'
 
 export default function NotBuilt({ client: c, accent }) {
+  const { SNAPSHOTS, DOC_REQUESTS, forClient, daysLeft, NOTICES, LEDGER, CURRENT_PERIOD } = useRepo()
   const snap = SNAPSHOTS[c.id]
   const row = LEDGER[c.id][CURRENT_PERIOD]
   const docs = DOC_REQUESTS.filter((d) => d.clientId === c.id && d.status !== 'Received')

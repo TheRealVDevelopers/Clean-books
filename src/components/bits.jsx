@@ -6,17 +6,14 @@ import {
 } from 'lucide-react'
 import { Pill, Bar } from './ui.jsx'
 import { FILING_TONE, dueTone, dueLabel, READINESS_TONE } from '../lib/status.js'
-import { daysBetween } from '../lib/dates.js'
-import { TODAY } from '../data/practice.js'
-import { iso } from '../lib/dates.js'
+import { daysBetween, iso } from '../lib/dates.js'
 import { useApp } from '../lib/store.jsx'
+import { useRepo } from '../repo/index.js'
 
 const ICONS = {
   Dumbbell, Truck, UtensilsCrossed, Factory, Plane, Scissors, Pill: PillIcon,
   Hammer, Stethoscope, Wheat, GraduationCap, ShoppingBag,
 }
-
-const NOW = iso(TODAY)
 
 export function VerticalIcon({ client, size = 16, className = '' }) {
   const I = ICONS[client?.icon] || Building2
@@ -50,8 +47,9 @@ export function StatusPill({ status, dot = true }) {
 }
 
 export function DueCell({ due, done, showDate = true }) {
+  const { TODAY } = useRepo()
   if (!due) return <span className="text-faint">—</span>
-  const d = daysBetween(NOW, due)
+  const d = daysBetween(iso(TODAY), due)
   return (
     <span className="inline-flex items-center gap-2">
       {showDate && <span className="num text-[12.5px] text-mute">{due.slice(8, 10)}/{due.slice(5, 7)}</span>}

@@ -22,6 +22,23 @@ export default defineConfig(({ mode }) => {
     define: { 'import.meta.env.VITE_APP_MODE': JSON.stringify(appMode) },
     server: { port: demo ? 5185 : 5186 },
     preview: { port: demo ? 4185 : 4186 },
-    build: { outDir: demo ? 'dist-demo' : 'dist' },
+    build: {
+      outDir: demo ? 'dist-demo' : 'dist',
+      rolldownOptions: {
+        output: {
+          codeSplitting: {
+            groups: [
+              // Firebase (live build only) is split by service so that no single
+              // download is over the chunk-size warning.
+              { name: 'firebase-firestore', test: /node_modules[\\/]@firebase[\\/]firestore[\\/]/, priority: 3 },
+              { name: 'firebase-auth', test: /node_modules[\\/]@firebase[\\/]auth[\\/]/, priority: 2 },
+              { name: 'firebase', test: /node_modules[\\/]@?firebase[\\/]/, priority: 1 },
+              // One chunk of icons rather than one tiny file per icon.
+              { name: 'icons', test: /node_modules[\\/]lucide-react[\\/]/ },
+            ],
+          },
+        },
+      },
+    },
   }
 })

@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { Sparkles, Send, GitCompareArrows, FolderOpen, Copy, Bot, UserRound, ShieldCheck, FileSpreadsheet } from 'lucide-react'
 import { Card, CardHead, PageHead, Pill, MiniStat } from '../components/ui.jsx'
 import { ClientChip, Note, StatusPill } from '../components/bits.jsx'
-import { CLIENTS, CURRENT_PERIOD, LEDGER, OBLIGATIONS, ITC_ROWS, DOC_REQUESTS } from '../data/index.js'
 import { inr } from '../lib/format.js'
 import { pLabel } from '../lib/dates.js'
 import { useApp } from '../lib/store.jsx'
+import { useRepo } from '../repo/index.js'
 
 const PROMPTS = [
   'Prepare August GST pack',
@@ -19,12 +19,14 @@ export default function Assistant() {
   const [question, setQuestion] = useState('')
   const [messages, setMessages] = useState([{ id: 'hello', role: 'assistant', text: 'Good morning. Pick a client and ask me what you need. I can prepare a GST summary, find missing data, show 2B mismatches or draft a reminder.' }])
   const { statusOf, docStatusOf, receiptsFor, toast } = useApp()
+  const repo = useRepo()
+  const { CLIENTS } = repo
   const client = CLIENTS.find((item) => item.id === clientId)
 
   const ask = (text = question) => {
     const clean = text.trim()
     if (!clean) return
-    const answer = buildAnswer({ client, question: clean, statusOf, docStatusOf, receiptsFor })
+    const answer = buildAnswer({ repo, client, question: clean, statusOf, docStatusOf, receiptsFor })
     const stamp = Date.now()
     setMessages((items) => [...items, { id: 'q' + stamp, role: 'user', text: clean, client: client.short }, { id: 'a' + stamp, role: 'assistant', text: answer.summary, answer }])
     setQuestion('')
@@ -73,7 +75,8 @@ function Answer({ answer, onCopy }) {
   </div>
 }
 
-function buildAnswer({ client, question, statusOf, docStatusOf, receiptsFor }) {
+function buildAnswer({ repo, client, question, statusOf, docStatusOf, receiptsFor }) {
+  const { CURRENT_PERIOD, LEDGER, OBLIGATIONS, ITC_ROWS, DOC_REQUESTS } = repo
   const row = LEDGER[client.id][CURRENT_PERIOD]
   const obligations = OBLIGATIONS.filter((item) => item.clientId === client.id && item.period === CURRENT_PERIOD)
   const gstr1 = obligations.find((item) => item.form === 'GSTR-1')

@@ -3,24 +3,23 @@ import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, CalendarDays, AlertOctagon, Landmark, CheckCheck, Download } from 'lucide-react'
 import { Card, CardHead, PageHead, Kpi, Pill, Table, Segmented, MiniStat, Empty } from '../components/ui.jsx'
 import { ClientChip, DueCell, StatusPill, Note } from '../components/bits.jsx'
-import { OBLIGATIONS, KINDS, clientById, staffById, STAFF, isDone } from '../data/index.js'
-import { calendarMonth, monthTotals } from '../lib/derive.js'
+import { isDone, KINDS } from '../lib/obligations.js'
 import { inr, inrShort, toCsv } from '../lib/format.js'
 import { MONTHS_LONG, iso } from '../lib/dates.js'
-import { TODAY } from '../data/practice.js'
 import { useApp } from '../lib/store.jsx'
-
-const NOW = iso(TODAY)
+import { useRepo } from '../repo/index.js'
 
 export default function Calendar() {
   const { statusOf, fileReturn, markReady, toast } = useApp()
+  const { OBLIGATIONS, clientById, staffById, STAFF, TODAY, calendarMonth, monthTotals } = useRepo()
+  const NOW = iso(TODAY)
   const [year, setYear] = useState(2026)
   const [month, setMonth] = useState(8) // September
   const [kind, setKind] = useState('all')
   const [staff, setStaff] = useState('all')
   const [pickedDay, setPickedDay] = useState(null)
 
-  const cells = useMemo(() => calendarMonth(year, month), [year, month])
+  const cells = useMemo(() => calendarMonth(year, month), [calendarMonth, year, month])
   const filtered = useMemo(() => cells.map((c) => {
     if (!c) return null
     const items = c.items.filter((o) => (kind === 'all' || o.kind === kind) && (staff === 'all' || o.assignee === staff))

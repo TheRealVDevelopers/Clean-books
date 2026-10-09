@@ -73,7 +73,3 @@ export const NOTICES = [
 export const noticesForClient = (id) => NOTICES.filter((n) => n.clientId === id)
 export const openNotices = () => NOTICES.filter((n) => !['Closed', 'Dropped'].includes(n.status))
 export const noticeExposure = () => NOTICES.reduce((s, n) => s + (n.amount || 0), 0)
-
-export const AUTHORITY_TONE = {
-  GST: 'brand', 'Income Tax': 'info', PF: 'warn', ESI: 'warn', MCA: 'mute',
-}
