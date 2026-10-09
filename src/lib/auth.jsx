@@ -9,6 +9,7 @@ import {
 } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
 import { firebase, firebaseEnabled } from './firebase.js'
+import { IS_DEMO } from './mode.js'
 
 const AuthContext = createContext(null)
 
@@ -36,7 +37,7 @@ export function AuthProvider({ children }) {
 
   const value = useMemo(() => ({
     enabled: firebaseEnabled,
-    demoMode: !firebaseEnabled,
+    demoMode: IS_DEMO,
     user,
     profile,
     loading,

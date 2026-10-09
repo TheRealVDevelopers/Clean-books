@@ -18,13 +18,32 @@ on their own. Open `/#/app/CL-02`, send the two pending items, then look at
 
 ```bash
 npm install
-npm run dev      # http://localhost:5185
+npm run dev:demo   # the sales demo — http://localhost:5185
 ```
 
-Everything is demo data. Filing and reminder actions change the screen for the session only —
+The demo is all sample data. Filing and reminder actions change the screen for the session only —
 nothing is sent to any portal. "Reset demo" in the sidebar puts it all back.
 
-For Firebase later: copy `.env.example` to `.env`, add your Firebase web-app values, then replace the session-store actions in `src/lib/store.jsx` with Firestore and Storage writes. The Firebase initializer is already in `src/lib/firebase.js`.
+### Demo build and live build
+
+One codebase builds two ways, chosen at build time (`--mode demo`, or `VITE_APP_MODE=demo|live`):
+the **demo** above, and **live** — the real application on Firebase, which is being built under
+[Work Order 1](./inspection/WO-1-foundation.md).
+
+| Command | What it does |
+|---|---|
+| `npm run dev:demo` | The sales demo at http://localhost:5185. |
+| `npm run dev` | Live mode at http://localhost:5186, connected to the local Firebase emulators. |
+| `npm run build:demo` | Demo production build into `dist-demo/`. |
+| `npm run build` | Live production build into `dist/`. Needs the `VITE_FIREBASE_*` values in `.env`. |
+| `npm run emulators` | Auth, Firestore, Storage and Functions emulators for the offline `demo-cleanbook` project. Emulator UI at http://127.0.0.1:4000. Needs Java 21 or newer. |
+| `npm run seed` | Wipes the emulators and loads test logins — see [scripts/SEED-USERS.md](./scripts/SEED-USERS.md). |
+| `npm test` | Unit tests (Vitest). |
+| `npm run test:rules` | Firestore and Storage security-rules tests, run against the emulators. |
+
+To work on live mode, run `npm run emulators` in one terminal, then `npm run seed` and `npm run dev`
+in another, and sign in as `principal.a@cleanbook.test` with password `cleanbook-seed-1`.
+Development never connects to a real Firebase project.
 
 ---
 
@@ -130,7 +149,7 @@ entity. Better to raise that in the pitch than to have a CA raise it for you.
 ## How it's built
 
 - React 19 + Vite + Tailwind, `recharts` for charts, `lucide-react` for icons. No backend.
-- Hash routing, so `dist/` can be dropped on any static host.
+- Hash routing, so `dist-demo/` (or the live `dist/`) can be dropped on any static host.
 - Light and dark themes off CSS variables (`data-theme` on `<html>`).
 - [CLEANBOOK_REQUIREMENTS.md](./CLEANBOOK_REQUIREMENTS.md) contains the product scope: Firebase foundation, integrations and the AI-assistant guardrails.
 

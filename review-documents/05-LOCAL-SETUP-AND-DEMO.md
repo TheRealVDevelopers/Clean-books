@@ -5,28 +5,37 @@
 - Node.js compatible with Vite 8.
 - npm.
 - A modern browser.
+- Java 21 or newer, for the Firebase emulators (live mode only).
 
-## Install and run
+## Install and run the demo
 
 ```bash
 npm install
-npm run dev
+npm run dev:demo
 ```
 
-Open the local address shown by Vite. The current development setup commonly uses:
+The demo opens at:
 
 ```text
 http://localhost:5185
 ```
 
-## Production build
+## Run live mode against the emulators
 
 ```bash
-npm run build
-npm run preview
+npm run emulators   # terminal 1: Auth, Firestore, Storage, Functions; UI at http://127.0.0.1:4000
+npm run seed        # terminal 2: wipes the emulators and loads the logins in scripts/SEED-USERS.md
+npm run dev         # live mode at http://localhost:5186
 ```
 
-The deployable static output is written to `dist/`.
+## Production builds
+
+```bash
+npm run build:demo   # demo, written to dist-demo/
+npm run preview:demo
+npm run build        # live, written to dist/ — needs the Firebase values below
+npm run preview
+```
 
 ## Firebase configuration
 

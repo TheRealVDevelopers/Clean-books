@@ -78,6 +78,7 @@ export default function App() {
   const location = useLocation()
 
   if (auth.loading) return <div className="min-h-[100dvh] bg-bg grid place-items-center text-sm text-mute">Opening CleanBook…</div>
+  if (!auth.demoMode && !auth.enabled) return <NotConfigured />
 
   return (
     <AppProvider>
@@ -93,5 +94,23 @@ export default function App() {
         {(auth.demoMode || auth.user) && <Route path="/*" element={<PracticeApp />} />}
       </Routes>
     </AppProvider>
+  )
+}
+
+// A live build with no Firebase project behind it. Say so plainly rather than
+// falling back to sample data that could be mistaken for a real practice.
+function NotConfigured() {
+  return (
+    <main className="min-h-[100dvh] bg-bg grid place-items-center p-4">
+      <section className="card w-full max-w-lg p-7">
+        <h1 className="text-xl font-extrabold text-ink">Firebase is not configured</h1>
+        <p className="text-[13px] text-mute mt-2 leading-relaxed">
+          This is a live build of CleanBook, and it has no Firebase project settings. Add the six
+          VITE_FIREBASE_* values to <code>.env</code> and build again. For local development, run the
+          emulators with <code>npm run emulators</code> and start <code>npm run dev</code>. For the sales
+          demo, use <code>npm run dev:demo</code> or <code>npm run build:demo</code>.
+        </p>
+      </section>
+    </main>
   )
 }

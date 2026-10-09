@@ -37,7 +37,7 @@ Firebase SDK version: `12.19.0`.
 ## Routing and deployment
 
 - Hash-based routing supports static hosting.
-- Production files are generated in `dist/`.
+- Production files are generated in `dist/` (live build) and `dist-demo/` (demo build).
 - The current prototype can be hosted on Firebase Hosting, Cloudflare Pages, Netlify, Vercel or any static web server.
 
 ## Browser capabilities
